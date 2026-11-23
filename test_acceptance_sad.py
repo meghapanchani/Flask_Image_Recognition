@@ -3,15 +3,7 @@
 import pytest
 from app import app
 
-@pytest.fixture
-def client():
-    """
-    Fixture for the Flask test client.
-    - Purpose: Set up a test client for making requests to the Flask app during testing.
-    - Usage: Provides a `client` object to use for HTTP request simulations.
-    """
-    with app.test_client() as client:
-        yield client
+
 
 def test_acceptance_missing_file(client):
     """
@@ -24,6 +16,9 @@ def test_acceptance_missing_file(client):
     """
     # Simulate a POST request with no file data
     response = client.post("/prediction", data={}, content_type="multipart/form-data")
+    print("STATUS:", response.status_code)
+    print("RESPONSE:", response.get_data(as_text=True))
+    print("CSRF ENABLED:", client.application.config["WTF_CSRF_ENABLED"])
 
     # Assertions:
     # 1. Ensure the response status code is 200, indicating the request was processed.

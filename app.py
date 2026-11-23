@@ -1,14 +1,19 @@
 """Flask web application for hand-sign digit recognition."""
 
+import os
+import secrets
+from flask_wtf.csrf import CSRFProtect
 from flask import Flask, render_template, request
 from model import preprocess_img, predict_result
 
+
 # Instantiating Flask app
 app = Flask(__name__)
-
+app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+CSRFProtect(app)
 
 # Home route
-@app.route("/")
+@app.route("/", methods=["GET"])
 def main():
     """Display the homepage with the image upload form."""
     return render_template("index.html")
@@ -19,7 +24,12 @@ def main():
 def predict_image_file():
     """Process an uploaded image and display its predicted digit."""
     try:
-        img = preprocess_img(request.files["file"].stream)
+        uploaded_file = request.files.get("file")
+
+        if uploaded_file is None:
+            raise ValueError("No file was uploaded.")
+
+        img = preprocess_img(uploaded_file.stream)
         pred = predict_result(img)
         return render_template("result.html", predictions=str(pred))
 
